@@ -186,7 +186,8 @@ set(msg_files
 	TaskStackInfo.msg
 	TecsStatus.msg
 	TelemetryStatus.msg
-	ThrustVectoringAttitudeStatus.msg
+	ThrustVectoringAttitudeStatus.msg ##custom
+	ThrustVectoringSetpoint.msg ##custom
 	TiltrotorExtraControls.msg
 	TimesyncStatus.msg
 	TrajectoryBezier.msg

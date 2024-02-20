@@ -111,6 +111,9 @@
 #include <uORB/topics/vehicle_trajectory_bezier.h>
 #include <uORB/topics/vehicle_trajectory_waypoint.h>
 
+//## CUSTOM MAVROS ##
+#include <uORB/topics/thrust_vectoring_setpoint.h>
+
 #if !defined(CONSTRAINED_FLASH)
 # include <uORB/topics/debug_array.h>
 # include <uORB/topics/debug_key_value.h>
@@ -202,6 +205,12 @@ private:
 	void handle_message_gimbal_device_information(mavlink_message_t *msg);
 	void handle_message_gimbal_device_attitude_status(mavlink_message_t *msg);
 
+	// CUSTOM MAVROS MSGS
+	void handle_message_key_command(mavlink_message_t *msg);
+	void handle_message_thrust_vectoring_setpoint(mavlink_message_t *msg);
+	// CUSTOM MAVROS MSGS
+
+
 #if !defined(CONSTRAINED_FLASH)
 	void handle_message_debug(mavlink_message_t *msg);
 	void handle_message_debug_float_array(mavlink_message_t *msg);
@@ -253,6 +262,11 @@ private:
 	mavlink_status_t		_status{}; ///< receiver status, used for mavlink_parse_char()
 
 	orb_advert_t _mavlink_log_pub{nullptr};
+
+	// CUSTOM MSG
+	orb_advert_t _key_command_pub{nullptr};
+	orb_advert_t _thrust_vectoring_set_pub{nullptr};
+	// CUSTOM MSG
 
 	static constexpr unsigned MAX_REMOTE_COMPONENTS{16};
 	struct ComponentState {

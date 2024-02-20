@@ -87,7 +87,7 @@ if(gazebo_FOUND)
 		iris_opt_flow_mockup
 		iris_rplidar
 		iris_vision
-		iris_4edf
+		iris_4edf ##custom
 		omnicopter
 		plane
 		plane_cam
@@ -102,7 +102,14 @@ if(gazebo_FOUND)
 		tailsitter
 		techpod
 		tiltrotor
-		thrust_vectoring_hex_dual
+		thrust_vectoring_hex_dual ##custom
+		## Custom ##
+		iris_3edf
+		x500
+		x500_single
+		x500_dual
+		x500_planar
+		## Custom ##
 		typhoon_h480
 		uuv_bluerov2_heavy
 		uuv_hippocampus

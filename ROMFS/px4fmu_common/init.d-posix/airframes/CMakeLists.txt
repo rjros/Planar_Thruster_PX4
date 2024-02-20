@@ -104,6 +104,11 @@ px4_add_romfs_files(
 
 	# CUSTOM Drones
 	22000_gazebo-classic_iris_4edf
+	22001_gazebo-classic_iris_3edf
+	22010_gazebo-classic_x500
+	22011_gazebo-classic_x500_single
+	22012_gazebo-classic_x500_dual
+	22014_gazebo-classic_x500_planar
 	22100_gazebo-classic_thrust_vectoring_hex_dual
 	# 25003_gazebo-classic_NDT_tilting
 
