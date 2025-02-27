@@ -55,13 +55,14 @@
 #include <ActuatorEffectivenessHelicopter.hpp>
 
 //Custom
-#include <ActuatorEffectivenessThrustVectoringMC.hpp>
+#include <ActuatorEffectivenessCoaxialThrusters.hpp>
 
 #include <ControlAllocation.hpp>
 #include <ControlAllocationPseudoInverse.hpp>
 #include <ControlAllocationSequentialDesaturation.hpp>
 
 #include <lib/matrix/matrix/math.hpp>
+
 #include <lib/perf/perf_counter.h>
 #include <px4_platform_common/px4_config.h>
 #include <px4_platform_common/module.h>
@@ -139,11 +140,11 @@ private:
 
 	void update_effectiveness_matrix_if_needed(EffectivenessUpdateReason reason);
 
-	// *** CUSTOM ***
-	// void update_effectiveness_matrix_mode_change(EFFE);
-
-
-
+	// *** Function used for helicopters throttle***
+	float throttleSpoolupProgress();
+	uint64_t _armed_time{0};
+	float _spoolup_time{10};
+	float _throttle_curve[5];
 	// *** END ***
 
 	void check_for_motor_failures();
@@ -175,7 +176,7 @@ private:
 		CUSTOM = 9,
 		HELICOPTER_TAIL_ESC = 10,
 		HELICOPTER_TAIL_SERVO = 11,
-		THRUST_VECTORING_MC=12
+		COAX_COPTER_THRUSTERS=12
 	};
 
 	enum class FailureMode {
@@ -270,8 +271,14 @@ private:
 		(ParamInt<px4::params::CA_R_REV>) _param_r_rev,
 		// *** CUSTOM ***
 		(ParamInt<px4::params::CA_MAN_ANGLE>) _param_ca_man_angle,
-		(ParamInt<px4::params::CA_ATTITUDE_MODE>) _param_ca_attitude_mode,
 		(ParamInt<px4::params::CA_INDEX>) _param_ca_index,
+		(ParamFloat<px4::params::COM_SPOOLUP_TIME>) _param_com_spoolup_time,
+
+		(ParamFloat<px4::params::CA_COAX_THR_C0>) _param_ca_coax_thr_c0,
+		(ParamFloat<px4::params::CA_COAX_THR_C1>) _param_ca_coax_thr_c1,
+		(ParamFloat<px4::params::CA_COAX_THR_C2>) _param_ca_coax_thr_c2,
+		(ParamFloat<px4::params::CA_COAX_THR_C3>) _param_ca_coax_thr_c3,
+		(ParamFloat<px4::params::CA_COAX_THR_C4>) _param_ca_coax_thr_c4,
 
 		//*** END ***
 		(ParamInt<px4::params::VECT_ATT_MODE>) _param_vectoring_att_mode

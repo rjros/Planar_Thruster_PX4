@@ -38,6 +38,10 @@ px4_add_library(ActuatorEffectiveness
 	ActuatorEffectivenessUUV.hpp
 	ActuatorEffectivenessControlSurfaces.cpp
 	ActuatorEffectivenessControlSurfaces.hpp
+	###########CUSTOM########################
+	ActuatorEffectivenessCoaxialThrusters.cpp
+	ActuatorEffectivenessCoaxialThrusters.hpp
+	###########CUSTOM########################
 	ActuatorEffectivenessCustom.cpp
 	ActuatorEffectivenessCustom.hpp
 	ActuatorEffectivenessFixedWing.cpp

@@ -29,8 +29,7 @@ parameters:
                 9: Custom
                 10: Helicopter (tail ESC)
                 11: Helicopter (tail Servo)
-          #*** Thrust Vectoring Multirotor ***#
-                12: Thrust Vectoring Multirotor
+                12: CoaxialThrusters
             default: 0
 
         CA_METHOD:
@@ -46,18 +45,6 @@ parameters:
                 2: Automatic
             default: 2
 ###############################################################################################
-        # *** Thrust Vectoring Modifications ***
-        CA_ATTITUDE_MODE:
-            description:
-                short: Utilize one tilting angle for expanded actuated control
-                long: |
-                  One tilting angle drones have only one more degree of freedom,
-                  while expanded actuated (includes fully) drones up to 6 degree of freedom.
-            type: enum
-            values:
-                0: Tilting mode
-                1: Omnidirectional mode
-            default: 0
         CA_MAN_ANGLE:
             description:
                 short: Thrust direction for known tilting angles, used for manual testing. #Mavros topic pending
@@ -592,6 +579,18 @@ parameters:
                 1: Remove first failed motor from effectiveness
             default: 0
 ###############################################################################################
+        CA_COAX_THR_C${i}:
+            description:
+                short: Throttle curve at position ${i}
+                long: |
+                  Defines the output throttle at the interval position ${i}.
+            type: float
+            decimal: 3
+            increment: 0.1
+            num_instances: 5
+            min: 0
+            max: 1
+            default: [1, 1, 1, 1, 1]
         # *** Thrust Vectoring Modifications# ***
         CA_SV_TM_COUNT:
             description:
@@ -1228,36 +1227,30 @@ mixer:
                       name: COM_SPOOLUP_TIME
 ###############################################################################################
             # *** Thrust Vectoring Multirotor ***
-            12: #Thrust Vectoring Multirotor
-                title: 'Thrust Vectoring Multirotor'
+            12: #CoaxialThrusters
+                title: 'Coaxial Copter with Thrusters'
                 actuators:
                   - actuator_type: 'motor'
-                    group_label: 'Rotors'
                     count: 'CA_ROTOR_COUNT'
-                    item_label_prefix: 'Rotor ${i}'
                     per_item_parameters:
-                      standard:
-                        position: [ 'CA_ROTOR${i}_PX', 'CA_ROTOR${i}_PY', 'CA_ROTOR${i}_PZ' ]
-                      extra:
-                        - name: 'CA_ROTOR${i}_KM'
-                          label: 'Direction CCW'
-                          function: 'spin-dir'
-                          show_as: 'true-if-positive'
-                        - name: 'CA_ROTOR${i}_CT'
-                          label: "Thrust\nCoefficient"
-                        - name: 'CA_ROTOR${i}_TILT'
-                          label: 'Tilted by'
-                  - actuator_type: 'servo'
-                    group_label: 'Tilt Servos'
-                    count: 'CA_SV_TL_COUNT'
-                    item_label_prefix: 'Tilt ${i}'
-                    per_item_parameters:
+                        standard:
+                            position: [ 'CA_ROTOR${i}_PX', 'CA_ROTOR${i}_PY', 'CA_ROTOR${i}_PZ' ]
                         extra:
-                          - name: 'CA_SV_TL${i}_MINA'
-                            label: "Angle at Min\nTilt"
-                          - name: 'CA_SV_TL${i}_MAXA'
-                            label: "Angle at Max\nTilt"
-                          - name: 'CA_SV_TL${i}_TD'
-                            label: 'Tilt Direction'
+                          - name: 'CA_ROTOR${i}_KM'
+                            label: 'Direction CCW'
+                            function: 'spin-dir'
+                            show_as: 'true-if-positive'
+                          - name: 'CA_ROTOR${i}_AX'
+                            label: 'Axis X'
+                            function: 'axisx'
+                            advanced: true
+                          - name: 'CA_ROTOR${i}_AY'
+                            label: 'Axis Y'
+                            function: 'axisy'
+                            advanced: true
+                          - name: 'CA_ROTOR${i}_AZ'
+                            label: 'Axis Z'
+                            function: 'axisz'
+                            advanced: true
             # *** END-CUSTOM ***
 ###############################################################################################

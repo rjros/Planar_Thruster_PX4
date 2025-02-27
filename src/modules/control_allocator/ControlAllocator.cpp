@@ -46,6 +46,9 @@
 #include <mathlib/math/Limits.hpp>
 #include <mathlib/math/Functions.hpp>
 
+
+
+
 using namespace matrix;
 using namespace time_literals;
 
@@ -135,6 +138,16 @@ ControlAllocator::parameters_updated()
 	for (int i = 0; i < _num_control_allocation; ++i) {
 		_control_allocation[i]->updateParameters();
 	}
+
+	// Check the current values of the thrust curve for the helicopter
+
+	_throttle_curve[0] = _param_ca_coax_thr_c0.get();
+	_throttle_curve[1] = _param_ca_coax_thr_c1.get();
+	_throttle_curve[2] = _param_ca_coax_thr_c2.get();
+	_throttle_curve[3] = _param_ca_coax_thr_c3.get();
+	_throttle_curve[4] = _param_ca_coax_thr_c4.get();
+
+	_spoolup_time=_param_com_spoolup_time.get();
 
 	update_effectiveness_matrix_if_needed(EffectivenessUpdateReason::CONFIGURATION_UPDATE);
 }
@@ -349,8 +362,8 @@ ControlAllocator::update_effectiveness_source()
 		case EffectivenessSource::HELICOPTER_TAIL_SERVO:
 			tmp = new ActuatorEffectivenessHelicopter(this, ActuatorType::SERVOS);
 			break;
-		case EffectivenessSource::THRUST_VECTORING_MC:
-			tmp = new ActuatorEffectivenessThrustVectoringMC(this);
+		case EffectivenessSource::COAX_COPTER_THRUSTERS:
+			tmp = new ActuatorEffectivenessCoaxialThrusters(this);
 			break;
 
 		default:
@@ -498,114 +511,25 @@ ControlAllocator::Run()
 		_last_run = now;
 
 		check_for_motor_failures();
-		// new_mode= update_CA_manual_mode();
-		// if(new_mode){
 
-		// 	PX4_INFO("Mode has been changed");// change the effectivenss matrix shape
-		// }
-
-		// update the matrix since the pos changed, or do so in the do_update time
-		// call a function that receives the angle and uses it for the new axis orientation
-		//Accepts changes when the system is running
-		//print once to check wether the flag has change or not
 
 		_thrust_vectoring_status_sub.copy(&thrust_vec_status);
 
-		if(thrust_vec_status.manual_orientation!=prev_orientation){
 
-		switch (thrust_vec_status.manual_orientation) {
-			case 0:
-				PX4_INFO("NONE");
-				update_effectiveness_matrix_if_needed(EffectivenessUpdateReason::MANUAL_ANGLE_CHANGE);
-				_parameter_update_sub.copy(&param_update);
-				// We don't update the geometry after an actuator failure, as it could lead to unexpected results
-				// (e.g. a user could add/remove motors, such that the bitmask isn't correct anymore)
-				tilt_angle=0;//degrees
-				PX4_INFO("checking if it changes effectiveness");
-				updateParams();
-				parameters_updated();
-
-				break;
-			case 1:
-				PX4_INFO("Forward Mode");
-				tilt_angle=thrust_vec_status.forward_angle; //45 degrees
-				update_effectiveness_matrix_if_needed(EffectivenessUpdateReason::MANUAL_ANGLE_CHANGE);
-				_parameter_update_sub.copy(&param_update);
-				// We don't update the geometry after an actuator failure, as it could lead to unexpected results
-				// (e.g. a user could add/remove motors, such that the bitmask isn't correct anymore)
-				PX4_INFO("checking if it changes effectiveness");
-				updateParams();
-				parameters_updated();
-
-				break;
-
-			case 2:
-				PX4_INFO("Backward Mode");
-				tilt_angle=thrust_vec_status.backward_angle; //-45 degrees
-				update_effectiveness_matrix_if_needed(EffectivenessUpdateReason::MANUAL_ANGLE_CHANGE);
-				_parameter_update_sub.copy(&param_update);
-				// We don't update the geometry after an actuator failure, as it could lead to unexpected results
-				// (e.g. a user could add/remove motors, such that the bitmask isn't correct anymore)
-				PX4_INFO("checking if it changes effectiveness");
-				updateParams();
-				parameters_updated();
-
-				//updateParams();
-				//parameters_updated();
-				break;
-			case 3:
-				PX4_INFO("Backward Mode");
-				tilt_angle=thrust_vec_status.backward_angle; //-45 degrees
-				update_effectiveness_matrix_if_needed(EffectivenessUpdateReason::MANUAL_ANGLE_CHANGE);
-				_parameter_update_sub.copy(&param_update);
-				// We don't update the geometry after an actuator failure, as it could lead to unexpected results
-				// (e.g. a user could add/remove motors, such that the bitmask isn't correct anymore)
-				PX4_INFO("checking if it changes effectiveness");
-				updateParams();
-				parameters_updated();
-
-				//updateParams();
-				//parameters_updated();
-				break;
-			default:
-				PX4_INFO("unknown manual change");
-				break;
-			}
-		prev_orientation=thrust_vec_status.manual_orientation;
-		}
-
-		//TEST
-
-		//PX4_INFO("Mode Value %d",mode_value);
+		// For helicopter use the following curve according to Helicopter Mixer/ Effectivenss
+		//helicopter throttle curve is different from the MC, use reference values from mixers
+		const float throttle = math::interpolateN(-_thrust_sp(2),_throttle_curve) * throttleSpoolupProgress();
 
 
-
-		//PX4_INFO("checking if it changes effectiveness do ");
-		//place condition here for updating the matrix
-		// update_effectiveness_matrix_if_needed(EffectivenessUpdateReason::NO_EXTERNAL_UPDATE);
-
-		// Set control setpoint vector(s)
 		matrix::Vector<float, NUM_AXES> c[ActuatorEffectiveness::MAX_NUM_MATRICES];
 		c[0](0) = _torque_sp(0);
 		c[0](1) = _torque_sp(1);
 		c[0](2) = _torque_sp(2);
 		c[0](3) = _thrust_sp(0);
 		c[0](4) = _thrust_sp(1);
-		c[0](5) = _thrust_sp(2);
+		c[0](5) = -throttle;
 
-		/*** CUSTOM ***/
-		//PX4_INFO("Number of Control Allocation: %d \n",_num_control_allocation);
-		// Here the thrust_sp is between 0 and 1
-		// PX4_INFO("CA thrust_sp: %f  %f  %f \n", (double)_thrust_sp(0), (double)_thrust_sp(1), (double)_thrust_sp(2));
-		// Here the torque_sp seems to be between 0 and 1
-		/*** END-CUSTOM ***/
 
-		// Would be interesting to separate the matrix based on the task
-		//Use fixed propellers for X task and the remaing tilting propellers
-		//could be use for another task. Keeping the flight and task stable
-
-		//In the px4_tilting the control allocator checks the source first
-		//if (source!=EffectivenessSource::Thrust_Vectoring_Mode)
 		if (_num_control_allocation > 1) {
 			if (_vehicle_torque_setpoint1_sub.copy(&vehicle_torque_setpoint)) {
 				c[1](0) = vehicle_torque_setpoint.xyz[0];
@@ -619,21 +543,18 @@ ControlAllocator::Run()
 				c[1](5) = vehicle_thrust_setpoint.xyz[2];
 			}
 		}
-		//PX4_INFO("Control Allocation Number %d ", _num_control_allocation);
 
-		/*** CUSTOM ***/
-		if( source != EffectivenessSource::THRUST_VECTORING_MC ||
-		   ( source == EffectivenessSource::THRUST_VECTORING_MC &&
+		if( source != EffectivenessSource::COAX_COPTER_THRUSTERS ||
+		   ( source == EffectivenessSource::COAX_COPTER_THRUSTERS &&
 		     _num_control_allocation == 1 ) )
 		{
-			// PX4_INFO("Control Allocation Number %d ", _num_actuators[1]);
 
 
 			for (int i = 0; i < _num_control_allocation; ++i) {
 
-				_control_allocation[i]->setControlSetpoint(c[i]);
+				PX4_INFO("Throttle %f ",(double)throttle);
 
-				// Do allocation
+				_control_allocation[i]->setControlSetpoint(c[i]);
 				_control_allocation[i]->allocate();
 				_actuator_effectiveness->allocateAuxilaryControls(dt, i, _control_allocation[i]->_actuator_sp); //flaps and spoilers
 				_actuator_effectiveness->updateSetpoint(c[i], i, _control_allocation[i]->_actuator_sp,
@@ -644,10 +565,12 @@ ControlAllocator::Run()
 				}
 
 				_control_allocation[i]->clipActuatorSetpoint();
-				//check if missing commands
 				}
 		}
 		else {
+
+				PX4_INFO("Throttle 2 %f ",(double)throttle);
+
 
 				_control_allocation[0]->setControlSetpoint(c[0]);
 				// Do allocation
@@ -655,11 +578,6 @@ ControlAllocator::Run()
 				actuator_sp = _control_allocation[0]->getActuatorSetpoint();
 
 
-				//Tilts for testing purposes
-				//fix later to consider different geometries
-				// for(int i=8; i<10; i++){
-				// 	actuator_sp(i) = tilt_angle;
-				// }
 				actuator_sp(8)=-tilt_angle;
 				actuator_sp(9)=tilt_angle;
 				_control_allocation[1]->setActuatorSetpoint(servo_sp);
@@ -695,24 +613,6 @@ ControlAllocator::Run()
 
 				_control_allocation[0]->clipActuatorSetpoint();
 
-			//Double Matrix approach
-			//where one handles the tilting and the other handles the fixed
-
-
-			// // PX4_INFO( "Multiple allocation %d ", _num_control_allocation);
-
-			// //Vertical forces
-			// _control_allocation[0]->setControlSetpoint(c[0]);
-			// _control_allocation[0]->allocate();
-			// vertical_actuator_sp = _control_allocation[0]->getActuatorSetpoint();
-
-			// //Lateral forces
-			// _control_allocation[1]->setControlSetpoint(c[0]);
-			// _control_allocation[1]->allocate();
-			// lateral_actuator_sp = _control_allocation[1]->getActuatorSetpoint();//_control_allocation[1]->getActuatorSetpoint();
-			// // PX4_INFO("v_sp %d : %f ", 0, (double)lateral_actuator_sp(0));
-
-
 		}
 
 
@@ -737,8 +637,31 @@ ControlAllocator::Run()
 	perf_end(_loop_perf);
 }
 
-//Just update the desired matrix instead all of the actuators
-//E.g. just the tiltable rotors positions, advantage of using two matrices
+
+
+
+float
+ControlAllocator::throttleSpoolupProgress()
+{
+	vehicle_status_s vehicle_status;
+
+	if (_vehicle_status_sub.update(&vehicle_status)) {
+		_armed = vehicle_status.arming_state == vehicle_status_s::ARMING_STATE_ARMED;
+		_armed_time = vehicle_status.armed_time;
+	}
+
+	const float time_since_arming = (hrt_absolute_time() - _armed_time) / 1e6f;
+	const float spoolup_progress = time_since_arming / _spoolup_time;
+
+	if (_armed && spoolup_progress < 1.f) {
+		return spoolup_progress;
+	}
+	return 1.f;
+}
+
+
+
+
 void
 ControlAllocator::update_effectiveness_matrix_if_needed(EffectivenessUpdateReason reason)
 {
