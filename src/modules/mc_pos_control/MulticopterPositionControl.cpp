@@ -86,7 +86,7 @@ void MulticopterPositionControl::parameters_update(bool force)
 		ModuleParams::updateParams();
 		SuperBlock::updateParams();
 
-		PX4_INFO("Parameters CHanged");
+		PX4_INFO("Parameters Changed");
 
 		int num_changed = 0;
 
@@ -659,10 +659,11 @@ void MulticopterPositionControl::Run()
 				param_set(vectoring_param,&att_mode);
 				param_set(angle_param,&orientation);
 				//Thrust vectoring status for tilting and not tilting mode
-				vectoring_status.att_mode=flight_mode;
 				vectoring_status.manual_orientation=switches.orientation_switch;
 
 			}
+			vectoring_status.att_mode=flight_mode;
+
 			// // param_t vectoring_param = param_handle(px4::params::VECT_ATT_MODE);
 			// param_t angle_param =param_handle(px4::params::MAN_ATT_DIR);
 			// manual_control_switches_sub.update(&switches);
