@@ -552,7 +552,7 @@ ControlAllocator::Run()
 
 			for (int i = 0; i < _num_control_allocation; ++i) {
 
-				PX4_INFO("Throttle %f ",(double)throttle);
+				// PX4_INFO("Throttle %f ",(double)throttle);
 
 				_control_allocation[i]->setControlSetpoint(c[i]);
 				_control_allocation[i]->allocate();
@@ -569,7 +569,7 @@ ControlAllocator::Run()
 		}
 		else {
 
-				PX4_INFO("Throttle 2 %f ",(double)throttle);
+				// PX4_INFO("Throttle 2 %f ",(double)throttle);
 
 
 				_control_allocation[0]->setControlSetpoint(c[0]);

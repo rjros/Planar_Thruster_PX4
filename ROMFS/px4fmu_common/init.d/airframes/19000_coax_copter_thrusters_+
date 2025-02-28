@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# @name Coaxial Copter with Thrusters
+#
+# @type Helicopter
+# @class Copter
+#
+# @maintainer Ricardo Rosales <>
+#
+# @board px4_fmu-v2 exclude
+# @board bitcraze_crazyflie exclude
+#
+
+
+. ${R}etc/init.d/rc.mc_defaults
+
+# param set-default MAV_TYPE 44
+param set-default CA_AIRFRAME 12
+
+param set-default CA_ROTOR_COUNT 6
+
+param set-default CA_ROTOR0_PX  0.00
+param set-default CA_ROTOR0_PY  0.00
+param set-default CA_ROTOR0_PZ  0.10
+param set-default CA_ROTOR0_KM  0.05
+
+param set-default CA_ROTOR1_PX  0.00
+param set-default CA_ROTOR1_PY  0.00
+param set-default CA_ROTOR1_PZ -0.10
+param set-default CA_ROTOR1_KM -0.05
+
+
+# Right fan, pushes Left ####
+param set-default CA_ROTOR2_PX  0.00
+param set-default CA_ROTOR2_PY  0.25
+param set-default CA_ROTOR2_KM  0.00
+param set-default CA_ROTOR2_AX  0.0
+param set-default CA_ROTOR2_AY  -1.0
+param set-default CA_ROTOR2_AZ  0.0
+
+# Left fan, pushes Right ####
+param set-default CA_ROTOR3_PX  0.00
+param set-default CA_ROTOR3_PY -0.25
+param set-default CA_ROTOR3_KM  0.00
+param set-default CA_ROTOR3_AX  0.0
+param set-default CA_ROTOR3_AY  1.0
+param set-default CA_ROTOR3_AZ  0.0
+
+# Back fan, pushes front ####
+param set-default CA_ROTOR4_PX -0.25
+param set-default CA_ROTOR4_PY  0.00
+param set-default CA_ROTOR4_KM  0.00
+param set-default CA_ROTOR4_AX  1.0
+param set-default CA_ROTOR4_AY  0.0
+param set-default CA_ROTOR4_AZ  0.0
+#### Back fan, pushes front END ####
+
+#### Front fan, pushes back ####
+param set-default CA_ROTOR5_PX  0.25
+param set-default CA_ROTOR5_PY  0.00
+param set-default CA_ROTOR5_KM  0.00
+param set-default CA_ROTOR5_AX -1.0
+param set-default CA_ROTOR5_AY  0.0
+param set-default CA_ROTOR5_AZ  0.0
+#### Front fan, pushes back END ####
+
+## Prearm and spoolup time
+param set-default COM_DISARM_PRFLT 15
+param set-default COM_SPOOLUP_TIME 10
+
+# Depends on swashplates if used
+# No need for minimum collective pitch (or airmode) to keep torque authority
+# param set-default MPC_MANTHR_MIN 0
