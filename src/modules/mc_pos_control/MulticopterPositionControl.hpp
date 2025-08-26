@@ -72,6 +72,8 @@
 #include <uORB/topics/manual_control_setpoint.h>
 //read values from switches
 #include <uORB/topics/manual_control_switches.h>
+#include <uORB/topics/control_allocator_flag.h>
+
 
 
 
@@ -111,6 +113,8 @@ private:
 	uORB::Publication<thrust_vectoring_attitude_status_s> _thrust_vectoring_status_pub{ORB_ID(thrust_vectoring_attitude_status)};
 
 	uORB::SubscriptionCallbackWorkItem _local_pos_sub{this, ORB_ID(vehicle_local_position)};	/**< vehicle local position */
+	uORB::SubscriptionCallbackWorkItem _vehicle_attitude_sub{this, ORB_ID(vehicle_attitude)};
+
 
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
@@ -119,10 +123,12 @@ private:
 	uORB::Subscription _vehicle_constraints_sub{ORB_ID(vehicle_constraints)};
 	uORB::Subscription _vehicle_control_mode_sub{ORB_ID(vehicle_control_mode)};
 	uORB::Subscription _vehicle_land_detected_sub{ORB_ID(vehicle_land_detected)};
-	// ### CUSTOM ###
-	//read values from the att mode
+
+	//// CUSTOM PARAMETERS FOR PLANAR FLIGHT MODE ////
 	uORB::Subscription manual_control_switches_sub{ORB_ID(manual_control_switches)};
 	uORB::Subscription manual_control_set_sub{ORB_ID(manual_control_setpoint)};
+	uORB::Subscription control_allocator_flag_sub{ORB_ID(control_allocator_flag)};
+
 
 	manual_control_setpoint_s stick_setpoints{};
 
@@ -132,12 +138,11 @@ private:
 	//Values from setpoints
 	bool planar_flight =false;
 	int flight_mode=0;
-
-
 	manual_control_switches_s switches{};
+	matrix::Vector<int,4> CA_mode;
 
+	//// CUSTOM PARAMETERS FOR PLANAR FLIGHT MODE END ////
 
-	// ### CUSTOM ###
 	hrt_abstime _time_stamp_last_loop{0};		/**< time stamp of last loop iteration */
 	hrt_abstime _time_position_control_enabled{0};
 
@@ -284,7 +289,8 @@ private:
 	/**
 	 * Check for validity of positon/velocity states.
 	 */
-	PositionControlStates set_vehicle_states(const vehicle_local_position_s &local_pos);
+	PositionControlStates set_vehicle_states(const vehicle_local_position_s &local_pos,  const vehicle_attitude_s &vehicle_attitude,
+		matrix::Vector<int,4>CA_mode);
 
 	/**
 	 * Generate setpoint to bridge no executable setpoint being available.

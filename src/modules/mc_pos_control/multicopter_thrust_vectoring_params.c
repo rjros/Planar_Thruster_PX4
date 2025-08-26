@@ -47,10 +47,10 @@
  * to counteract with the external force (e.g., wind).
  *
  * @min 0
- * @max 2
- * @value 3 tilted attitude
- * @value 1 constant zero tilt
- * @value 2 fixed attitude
+ * @max 3
+ * @value 1 Normal Flight Mode
+ * @value 2 Dual thruster Mode
+ * @value 3 CA Flight Mode
  */
 PARAM_DEFINE_INT32(VECT_ATT_MODE, 0);
 

@@ -83,6 +83,8 @@
 #include <uORB/topics/failure_detector_status.h>
 //CUSTOM
 #include <uORB/topics/thrust_vectoring_attitude_status.h>
+#include <uORB/topics/control_allocator_flag.h>
+
 
 //CUSTOM
 
@@ -231,21 +233,23 @@ private:
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
 	uORB::Subscription _vehicle_control_mode_sub{ORB_ID(vehicle_control_mode)};
 	uORB::Subscription _failure_detector_status_sub{ORB_ID(failure_detector_status)};
-	//Test
+
+	///// CUSTOM /////
+	uORB::Publication<control_allocator_flag_s>	__control_allocator_flag_pub{ORB_ID(control_allocator_flag)};
 
 	uORB::Subscription _thrust_vectoring_status_sub{ORB_ID(thrust_vectoring_attitude_status)};
+
 	int16_t prev_orientation{0};
-	//Test
 
 	matrix::Vector3f _torque_sp;
 	matrix::Vector3f _thrust_sp;
 	bool _publish_controls{true};
 
-	//Custom//
+	matrix::Vector4f _xy_flag={0,0,0,0};
 	float tilt_angle{0};
 	matrix::Vector<float, NUM_ACTUATORS> servo_sp;
 
-	//END//
+	///// CUSTOM END /////
 
 	// Reflects motor failures that are currently handled, not motor failures that are reported.
 	// For example, the system might report two motor failures, but only the first one is handled by CA

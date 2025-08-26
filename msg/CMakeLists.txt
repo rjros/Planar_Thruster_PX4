@@ -58,6 +58,7 @@ set(msg_files
 	CellularStatus.msg
 	CollisionConstraints.msg
 	CollisionReport.msg
+	ControlAllocatorFlag.msg
 	ControlAllocatorStatus.msg
 	Cpuload.msg
 	DatamanRequest.msg
