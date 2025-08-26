@@ -601,7 +601,7 @@ void MulticopterPositionControl::Run()
 			//Control Gains fot the planar control
 
 			// Run position control
-			if (!_control.update(dt,_param_vectoring_att_mode.get(),planar_flight)) {
+			if (!_control.update(dt,flight_mode,planar_flight)) {
 				// Failsafe
 				_vehicle_constraints = {0, NAN, NAN, false, {}}; // reset constraints
 
@@ -619,21 +619,6 @@ void MulticopterPositionControl::Run()
 			stick_pitch=abs(stick_setpoints.pitch);
 			planar_flight=(stick_roll>=0.05f || stick_pitch>=0.05f)?true:false;
 
-
-			if (stick_setpoints.aux1<-0.5f){
-				flight_mode=1;
-			}
-			else if (stick_setpoints.aux1<0.5f && stick_setpoints.aux1>-0.5f){
-				flight_mode=2;
-			}
-			else{
-				flight_mode=3;
-			}
-
-			// PX4_INFO("Stick value %s", planar_flight ? "true" : "false");
-			// PX4_INFO("Stick roll %f and pitch %f", double(stick_roll),double(stick_pitch));
-
-			//Check the values of the stick to allow for mode switching tilted stop, and planar motion
 
 
 			// Publish internal position control setpoints
@@ -656,49 +641,39 @@ void MulticopterPositionControl::Run()
 			//Get the the attitude setpoint with the omni parameters
 			_control.getAttitudeSetpoint(matrix::Quatf(vehicle_attitude.q), flight_mode,attitude_setpoint);
 
-
 			///////////////////////////////////////////////////////////
 			//Add condition for selecting between rc or saved condition
 			//Get omni mode from rc
-
-			if (_param_rc_sim_mode.get()==1)
+			switch (_param_rc_sim_mode.get())
 			{
+			case 0:
+			{
+				// RC MODE
+				if (stick_setpoints.aux1 < -0.5f) {
+				flight_mode = 1;
+				} else if (stick_setpoints.aux1 < 0.5f && stick_setpoints.aux1 > -0.5f) {
+				flight_mode = 2;
+				} else {
+				flight_mode = 3;
+				}
+
 				param_t vectoring_param = param_handle(px4::params::VECT_ATT_MODE);
-				param_t angle_param =param_handle(px4::params::MAN_ATT_DIR);
-				manual_control_switches_sub.update(&switches);
-				int32_t att_mode= flight_mode;
-				// int32_t orientation =switches.orientation_switch;
-				int32_t orientation =switches.orientation_switch;
-				param_set(vectoring_param,&att_mode);
-				param_set(angle_param,&orientation);
-				//Thrust vectoring status for tilting and not tilting mode
-				vectoring_status.manual_orientation=switches.orientation_switch;
-
+				int32_t att_mode = flight_mode;
+				param_set(vectoring_param, &att_mode);
+				break;
 			}
-			vectoring_status.att_mode=flight_mode;
 
-			// // param_t vectoring_param = param_handle(px4::params::VECT_ATT_MODE);
-			// param_t angle_param =param_handle(px4::params::MAN_ATT_DIR);
-			// manual_control_switches_sub.update(&switches);
-			// int32_t att_mode= switches.vectoring_switch;
-			// int32_t orientation =switches.orientation_switch;
-			// param_set(vectoring_param,&att_mode);
-			// param_set(angle_param,&orientation);
+			case 1:
+				flight_mode = _param_vectoring_att_mode.get();
+				break;
+
+			default:
+				break;
+			}
 
 			///////////////////////////////////////////////////////////
 			//Add condition for selecting between rc or saved condition
-			vectoring_status.att_mode = _param_vectoring_att_mode.get();
-			vectoring_status.manual_orientation = _param_vectoring_manual_dir.get();
-
-
-			//Angles for the tilting
-			//offset for the sim
-			// vectoring_status.forward_angle=math::radians(_param_forward_angle.get()-90.0f);
-			// vectoring_status.backward_angle=math::radians(_param_backward_angle.get()-90.0f);
-
-			vectoring_status.forward_angle=math::radians(_param_forward_angle.get());
-			vectoring_status.backward_angle=math::radians(_param_backward_angle.get());
-
+			vectoring_status.att_mode = flight_mode;
 			_thrust_vectoring_status_pub.publish(vectoring_status);
 
 			//Thrust vectoring parameters, changed by rc or by the QGroundControl

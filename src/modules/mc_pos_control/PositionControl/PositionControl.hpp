@@ -335,6 +335,10 @@ private:
 
 	//CUSTOM//
 	matrix::Dcmf _R ; // Rotation matrix of the Body frame
+	matrix::Dcmf _R_yaw ; // Rotation matrix of the Body frame
+	matrix::Dcmf _R_W2B,_R_B2W;
+
+
 
 	bool planar_flag=false;
 	bool prev_flag={false};

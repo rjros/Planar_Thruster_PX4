@@ -537,17 +537,6 @@ ControlAllocator::Run()
 		check_for_motor_failures();
 
 
-		// new_mode= update_CA_manual_mode();
-		// if(new_mode){
-
-		// 	PX4_INFO("Mode has been changed");// change the effectivenss matrix shape
-		// }
-
-		// update the matrix since the pos changed, or do so in the do_update time
-		// call a function that receives the angle and uses it for the new axis orientation
-		//Accepts changes when the system is running
-		//print once to check wether the flag has change or not
-
 		_thrust_vectoring_status_sub.copy(&thrust_vec_status);
 
 		if(thrust_vec_status.manual_orientation!=prev_orientation){
@@ -632,19 +621,6 @@ ControlAllocator::Run()
 		c[0](4) = _thrust_sp(1);
 		c[0](5) = _thrust_sp(2);
 
-		/*** CUSTOM ***/
-		//PX4_INFO("Number of Control Allocation: %d \n",_num_control_allocation);
-		// Here the thrust_sp is between 0 and 1
-		// PX4_INFO("CA thrust_sp: %f  %f  %f \n", (double)_thrust_sp(0), (double)_thrust_sp(1), (double)_thrust_sp(2));
-		// Here the torque_sp seems to be between 0 and 1
-		/*** END-CUSTOM ***/
-
-		// Would be interesting to separate the matrix based on the task
-		//Use fixed propellers for X task and the remaing tilting propellers
-		//could be use for another task. Keeping the flight and task stable
-
-		//In the px4_tilting the control allocator checks the source first
-		//if (source!=EffectivenessSource::Thrust_Vectoring_Mode)
 		if (_num_control_allocation > 1) {
 			if (_vehicle_torque_setpoint1_sub.copy(&vehicle_torque_setpoint)) {
 				c[1](0) = vehicle_torque_setpoint.xyz[0];

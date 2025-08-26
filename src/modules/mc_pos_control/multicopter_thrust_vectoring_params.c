@@ -101,10 +101,10 @@ PARAM_DEFINE_FLOAT(BW_ANGLE, 0);
  *
  * @min 0
  * @max 1
- * @value 0 Simulation
- * @value 1 RC
+ * @value 0 RC
+ * @value 1 QGC
  */
-PARAM_DEFINE_INT32(RC_SIM, 1);
+PARAM_DEFINE_INT32(RC_SIM, 0);
 
 
 
