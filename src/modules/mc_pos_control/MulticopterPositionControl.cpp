@@ -607,7 +607,7 @@ void MulticopterPositionControl::Run()
 
 				_control.setInputSetpoint(generateFailsafeSetpoint(vehicle_local_position.timestamp_sample, states, true));
 				_control.setVelocityLimits(_param_mpc_xy_vel_max.get(), _param_mpc_z_vel_max_up.get(), _param_mpc_z_vel_max_dn.get());
-				_control.update(dt,_param_vectoring_att_mode.get(),planar_flight);
+				_control.update(dt,flight_mode,planar_flight);
 
 			}
 
@@ -639,7 +639,7 @@ void MulticopterPositionControl::Run()
 			thrust_vectoring_attitude_status_s vectoring_status{};
 			vectoring_status.timestamp = _time_stamp_last_loop;
 			//Get the the attitude setpoint with the omni parameters
-			_control.getAttitudeSetpoint(matrix::Quatf(vehicle_attitude.q), flight_mode,attitude_setpoint);
+			_control.getAttitudeSetpoint(matrix::Quatf(att.q), flight_mode,attitude_setpoint);
 
 			///////////////////////////////////////////////////////////
 			//Add condition for selecting between rc or saved condition

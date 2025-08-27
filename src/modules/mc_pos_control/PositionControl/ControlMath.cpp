@@ -63,7 +63,9 @@ void thrustToAttitude(const Vector3f &thr_sp, const float yaw_sp, const matrix::
 		att_sp.thrust_body[2] = -thr_sp.length();
 		break;
 	case 2:
-		thrustToFixedPitchAttitude(thr_sp, yaw_sp, att,att_sp);
+		// thrustToFixedPitchAttitude(thr_sp, yaw_sp, att,att_sp);
+		// thrustToFixedRollAttitude(thr_sp, yaw_sp, att,att_sp);
+		thrustToZeroTiltAttitude(thr_sp, yaw_sp, att,att_sp);
 		break;
 
 	case 3:
@@ -169,7 +171,9 @@ void thrustToZeroTiltAttitude(const Vector3f &thr_sp, const float yaw_sp, const 
 
 	// desired body_x and body_y axis
 	Vector3f body_x = Vector3f(cos(yaw_sp), sin(yaw_sp), 0.0f);
-	Vector3f body_y = Vector3f(-sinf(yaw_sp), cosf(yaw_sp), 0.0f);
+
+	Vector3f body_y = Vector3f(-sin(yaw_sp), cos(yaw_sp), 0.0f);
+
 
 	Dcmf R_sp;
 
@@ -185,15 +189,18 @@ void thrustToZeroTiltAttitude(const Vector3f &thr_sp, const float yaw_sp, const 
 		R_sp(i, 2) = body_z(i);
 	}
 
+	// R_sp.print();
 	// copy quaternion setpoint to attitude setpoint topic
 	Quatf q_sp = R_sp;
 	q_sp.copyTo(att_sp.q_d);
 
 
 	// set the euler angles, for logging only, must not be used for control
-	att_sp.roll_body = 0;
-	att_sp.pitch_body = 0;
-	att_sp.yaw_body = yaw_sp;
+	const Eulerf euler{R_sp};
+	att_sp.roll_body = euler.phi();
+	att_sp.pitch_body = euler.theta();
+	att_sp.yaw_body = euler.psi();
+
 
 
 	att_sp.thrust_body[0] = thr_sp.dot(body_x);// values tend to be very small

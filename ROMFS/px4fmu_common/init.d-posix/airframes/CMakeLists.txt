@@ -80,8 +80,10 @@ px4_add_romfs_files(
 	4005_gz_x500_vision
 	4006_gz_px4vision
 
+
 	6011_gazebo-classic_typhoon_h480
 	6011_gazebo-classic_typhoon_h480.post
+
 
 	8011_gz_omnicopter
 
@@ -111,6 +113,8 @@ px4_add_romfs_files(
 	22014_gazebo-classic_x500_planar
 	22100_gazebo-classic_thrust_vectoring_hex_dual
 	4012_gz_holybro_x500_dual
+	4014_gz_torsional_quad
+	4015_gz_custom_x500_4edf
 	# 25003_gazebo-classic_NDT_tilting
 
 )
