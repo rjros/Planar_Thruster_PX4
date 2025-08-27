@@ -52,7 +52,12 @@ struct PositionControlStates {
 	matrix::Vector3f position;
 	matrix::Vector3f velocity;
 	matrix::Vector3f acceleration;
+	matrix::Quaternionf attitude;
 	float yaw;
+	matrix::Vector<int,4> CA_mode;
+
+
+
 };
 
 /**
@@ -206,13 +211,15 @@ public:
 	 */
 	void getLocalPositionSetpoint(vehicle_local_position_setpoint_s &local_position_setpoint) const;
 
-	/**
+/**
 	 * Get the controllers output attitude setpoint
 	 * This attitude setpoint was generated from the resulting acceleration setpoint after position and velocity control.
 	 * It needs to be executed by the attitude controller to achieve velocity and position tracking.
+	 * @param att current attitude of the robot
+	 * @param vectoring_att_mode attitude mode for thrust vectoring capable vehicles
 	 * @param attitude_setpoint reference to struct to fill up
 	 */
-	void getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_setpoint) const;
+	void getAttitudeSetpoint(const matrix::Quatf &att, const int vectoring_att_mode, vehicle_attitude_setpoint_s &attitude_setpoint) const;
 
 	/**
 	 * Get the controllers output attitude setpoint
@@ -251,16 +258,25 @@ private:
 	void _planar_velocityControl(const float dt,const float yaw_sp);  //planar velocity control
 	void _planar_accelerationControl(const float yaw_sp);// separates thrust values if planar condition is on
 
-	// For the combined [planar/tilter] control of the system
-	void _combined_positionControl(const float dt,const float yaw_sp);// planar proportional position control
-	void _combined_velocityControl(const float dt,const float yaw_sp);  //planar velocity control
-	void _combined_accelerationControl(const float yaw_sp);// separates thrust values if planar condition is on
-
 	// For single pitch control of the system
 	void _single_positionControl(const float dt,const float yaw_sp);// planar proportional position control
 	void _single_velocityControl(const float dt,const float yaw_sp);  //planar velocity control
 	void _single_accelerationControl(const float yaw_sp);// separates thrust values if planar condition is on
 
+	// For the combined [planar/tilter] control of the system
+	void _planar_X_positionControl(const float dt,const float yaw_sp);// planar proportional position control
+	void _planar_X_velocityControl(const float dt,const float yaw_sp);  //planar velocity control
+	void _planar_X_accelerationControl(const float yaw_sp);// separates thrust values if planar condition is on
+
+	// For the combined [planar/tilter] control of the system
+	void _planar_Y_positionControl(const float dt,const float yaw_sp);// planar proportional position control
+	void _planar_Y_velocityControl(const float dt,const float yaw_sp);  //planar velocity control
+	void _planar_Y_accelerationControl(const float yaw_sp);// separates thrust values if planar condition is on
+
+	// For Automatic Change based on the Control Allocation Matrix
+	void _autoPlanar_positionControl(const float dt,const float yaw_sp);// planar proportional position control
+	void _autoPlanar_velocityControl(const float dt,const float yaw_sp);  //planar velocity control
+	void _autoPlanar_accelerationControl(const float yaw_sp);// separates thrust values if planar condition is on
 
 
 	// Gains
@@ -306,6 +322,8 @@ private:
 	matrix::Vector3f _vel_dot; /**< velocity derivative (replacement for acceleration estimate) */
 	matrix::Vector3f _vel_int; /**< integral term of the velocity controller */
 	float _yaw{}; /**< current heading */
+	matrix::Quaternionf _attitude; /**current uav attitude in quaternion*/
+
 
 	// Setpoints
 	matrix::Vector3f _pos_sp; /**< desired position */
@@ -316,8 +334,19 @@ private:
 	float _yawspeed_sp{}; /** desired yaw-speed */
 
 	//CUSTOM//
+	matrix::Dcmf _R ; // Rotation matrix of the Body frame
+	matrix::Dcmf _R_yaw ; // Rotation matrix of the Body frame
+	matrix::Dcmf _R_W2B,_R_B2W;
+
+
+
 	bool planar_flag=false;
 	bool prev_flag={false};
+	matrix::Vector<int,4> _CA_mode;
+	int _control_mode = 0b0000;
+	int _auto_mode = 0b0000;
+
+
 	//CUSTOM//
 
 };

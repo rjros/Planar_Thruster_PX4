@@ -642,7 +642,7 @@ void MulticopterPositionControl::Run()
 			vectoring_status.timestamp = _time_stamp_last_loop;
 			//Get the the attitude setpoint with the omni parameters
 			_control.getAttitudeSetpoint(matrix::Quatf(att.q), _param_vectoring_att_mode.get(),
-							attitude_setpoint, vectoring_status,planar_flight);
+							attitude_setpoint);
 
 			///////////////////////////////////////////////////////////
 			//Add condition for selecting between rc or saved condition
