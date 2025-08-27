@@ -174,14 +174,14 @@ bool PositionControl::update(const float dt, const int vectoring_att_mode,bool p
 
 	case 2:
 
-		// _planar_Y_positionControl(dt,_yaw_sp);
-		// _planar_Y_velocityControl(dt,_yaw_sp);
-		_planar_positionControl(dt,_yaw_sp);
-		_planar_velocityControl(dt,_yaw_sp);
-		PX4_INFO("Position planar xY");
+		_planar_X_positionControl(dt,_yaw_sp);
+		_planar_X_velocityControl(dt,_yaw_sp);
+
+		// PX4_INFO("Position planar xY");
 
 		break;
 	case 3:
+
 		_autoPlanar_positionControl(dt,_yaw_sp);
 		// PX4_INFO("Position auto");
 
@@ -445,6 +445,8 @@ void PositionControl::_planar_accelerationControl(const float yaw_sp)
 
 
 }
+
+
 
 void PositionControl::_planar_X_positionControl(const float dt,const float yaw_sp)
 {
@@ -731,7 +733,7 @@ void PositionControl::_autoPlanar_positionControl(const float dt,const float yaw
 		_auto_mode=1;
 		_planar_positionControl(dt,yaw_sp);
 		_planar_velocityControl(dt,yaw_sp);
-		PX4_INFO("Planar XY");
+		// PX4_INFO("Planar XY");
 
 
 	}
@@ -740,7 +742,7 @@ void PositionControl::_autoPlanar_positionControl(const float dt,const float yaw
 		_auto_mode=2;
 		_planar_X_positionControl(dt,yaw_sp);
 		_planar_X_velocityControl(dt,yaw_sp);
-		PX4_INFO("Planar X");
+		// PX4_INFO("Planar X");
 
 	}
 
@@ -749,14 +751,14 @@ void PositionControl::_autoPlanar_positionControl(const float dt,const float yaw
 		_auto_mode=3;
 		_planar_Y_positionControl(dt,yaw_sp);
 		_planar_Y_velocityControl(dt,yaw_sp);
-		PX4_INFO("Planar Y");
+		// PX4_INFO("Planar Y");
 
 	}
 	else {
 		_auto_mode=4;
 		_positionControl();
 		_velocityControl(dt);
-		PX4_INFO("Normal Flight");
+		// PX4_INFO("Normal Flight");
 
 	}
 
@@ -807,11 +809,7 @@ void PositionControl::getLocalPositionSetpoint(vehicle_local_position_setpoint_s
 	_thr_sp.copyTo(local_position_setpoint.thrust);
 }
 
-// void PositionControl::getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_setpoint) const
-// {
-// 	ControlMath::thrustToAttitude(_thr_sp, _yaw_sp, attitude_setpoint);
-// 	attitude_setpoint.yaw_sp_move_rate = _yawspeed_sp;
-// }
+
 
 void PositionControl::getAttitudeSetpoint(const matrix::Quatf &att, const int vectoring_att_mode,
 					vehicle_attitude_setpoint_s &attitude_setpoint) const

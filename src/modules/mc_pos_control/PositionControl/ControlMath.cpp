@@ -63,12 +63,11 @@ void thrustToAttitude(const Vector3f &thr_sp, const float yaw_sp, const matrix::
 		att_sp.thrust_body[2] = -thr_sp.length();
 		break;
 	case 2:
-		// thrustToFixedPitchAttitude(thr_sp, yaw_sp, att,att_sp);
-		// thrustToFixedRollAttitude(thr_sp, yaw_sp, att,att_sp);
-		thrustToZeroTiltAttitude(thr_sp, yaw_sp, att,att_sp);
+		thrustToFixedPitchAttitude(thr_sp, yaw_sp, att,att_sp);
 		break;
 
 	case 3:
+		// thrustToFixedRollAttitude(thr_sp, yaw_sp, att,att_sp);
 		autoAttitudeChange(auto_mode,thr_sp,yaw_sp,att,att_sp);
 		break;
 
@@ -170,9 +169,9 @@ void thrustToZeroTiltAttitude(const Vector3f &thr_sp, const float yaw_sp, const 
 	Vector3f body_z = Vector3f(0.f, 0.f, 1.f);
 
 	// desired body_x and body_y axis
-	Vector3f body_x = Vector3f(cos(yaw_sp), sin(yaw_sp), 0.0f);
+	Vector3f body_x = Vector3f(cosf(yaw_sp), sinf(yaw_sp), 0.0f);
 
-	Vector3f body_y = Vector3f(-sin(yaw_sp), cos(yaw_sp), 0.0f);
+	Vector3f body_y = Vector3f(-sinf(yaw_sp), cosf(yaw_sp), 0.0f);
 
 
 	Dcmf R_sp;
@@ -200,6 +199,10 @@ void thrustToZeroTiltAttitude(const Vector3f &thr_sp, const float yaw_sp, const 
 	att_sp.roll_body = euler.phi();
 	att_sp.pitch_body = euler.theta();
 	att_sp.yaw_body = euler.psi();
+
+	// att_sp.roll_body = 0;
+	// att_sp.pitch_body = 0;
+	// att_sp.yaw_body = yaw_sp;
 
 
 
