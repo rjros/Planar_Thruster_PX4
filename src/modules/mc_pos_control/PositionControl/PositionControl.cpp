@@ -153,7 +153,7 @@ bool PositionControl::update(const float dt, const int vectoring_att_mode,bool p
 	moving_flag=!PX4_ISFINITE(error_xy)?true:false;
 	//Conditions for planar motion
 	//Vectoring mode on or off only
-	planar_flag=(planar_flight||distance_flag||moving_flag)?true:false;
+	planar_flag=(planar_flight||distance_flag||moving_flag||false)?true:false;
 
 	// PX4_INFO("Current position %f %f %f ",double(_pos(0)) ,double(_pos(1)), double(_pos(2)));
 	// PX4_INFO("Current setpoint %f %f %f ",double(_pos_sp(0)) ,double(_pos_sp(1)), double(_pos_sp(2)));
@@ -165,8 +165,8 @@ bool PositionControl::update(const float dt, const int vectoring_att_mode,bool p
 
 		case 1:
 		if (planar_flag){
-		_single_positionControl(dt,_yaw_sp);
-		_single_velocityControl(dt,_yaw_sp);
+		_planar_positionControl(dt,_yaw_sp);
+		_planar_velocityControl(dt,_yaw_sp);
 		// PX4_INFO("combined planar");
 		}
 		else {

@@ -59,7 +59,8 @@ void thrustToAttitude(const Vector3f &thr_sp, const float yaw_sp, const matrix::
 
 	case 1:
 		if (planar_flight){
-		thrustToSinglePlanarAttitude(thr_sp, yaw_sp, att,att_sp);
+		// thrustToSinglePlanarAttitude(thr_sp, yaw_sp, att,att_sp);
+		thrustToZeroTiltAttitude(thr_sp, yaw_sp, att,att_sp);
 		}
 		else {
 		bodyzToAttitude(-thr_sp, yaw_sp, att_sp);
